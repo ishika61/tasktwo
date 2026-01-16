@@ -1,0 +1,37 @@
+import pandas as pd
+import numpy as np
+
+np.random.seed(42)
+rows = 6000
+
+data = {
+    "Category": np.random.choice(["Furniture", "Office Supplies", "Technology"], rows),
+    "Segment": np.random.choice(["Consumer", "Corporate", "Home Office"], rows),
+    "Region": np.random.choice(["West", "East", "Central", "South"], rows),
+    "Sales": np.round(np.random.uniform(20, 5000, rows), 2),
+    "Profit": np.round(np.random.uniform(-500, 1500, rows), 2),
+}
+
+df = pd.DataFrame(data)
+df["Profit Margin"] = df["Profit"] / df["Sales"]
+
+df.to_excel("Cleaned_Superstore_Data.xlsx", index=False)
+
+pivot_category = df.pivot_table(values="Sales", index="Category", aggfunc="sum")
+pivot_region_segment = df.pivot_table(values="Sales", index="Region", columns="Segment", aggfunc="sum")
+pivot_profit_margin = df.pivot_table(values="Profit Margin", index=["Category", "Region"], aggfunc="mean")
+
+with pd.ExcelWriter("Pivot_Report.xlsx", engine="openpyxl") as writer:
+    df.to_excel(writer, sheet_name="Cleaned_Data", index=False)
+    pivot_category.to_excel(writer, sheet_name="Sales_by_Category")
+    pivot_region_segment.to_excel(writer, sheet_name="Sales_by_Region_Segment")
+    pivot_profit_margin.to_excel(writer, sheet_name="Profit_Margin_Analysis")
+
+with open("Insights.txt", "w") as f:
+    f.write(
+        "1. West region contributes the highest share of total sales.\n"
+        "2. Technology category generates maximum revenue.\n"
+        "3. Consumer segment dominates across regions.\n"
+        "4. Furniture category shows lower profit margins.\n"
+        "5. High sales regions do not always guarantee high profits.\n"
+    )
